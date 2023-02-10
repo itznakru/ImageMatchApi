@@ -11,10 +11,8 @@ namespace MatchEngineApi.Middleware
 {
     public class ExceptionHandlerMdl
     {
-
         readonly RequestDelegate _next;
         readonly ILogService _log;
-
 
         public ExceptionHandlerMdl(RequestDelegate next, ILogService log)
         {
@@ -36,8 +34,11 @@ namespace MatchEngineApi.Middleware
             {
                 var s=ex.ToString();
                 _log.Exception(s);
-                context.Response.StatusCode = 200;
-                await context.Response.WriteAsync(ExcepFormatToJson(new MatchEngineApiException("critical",s)));
+                context.Response.StatusCode = 500;
+                await context.Response
+                            .WriteAsync(
+                                ExcepFormatToJson(new MatchEngineApiException(ApiMethod.UNKNOWN,s))
+                            );
             }
         }
 
@@ -46,7 +47,7 @@ namespace MatchEngineApi.Middleware
             ApiResponse<string> rslt = new()
             {
                 Status=nameof(ApiResponseStatus.ERROR),
-                Method = ex.Method,
+                Method = ex.Method ?? "CRITICAL EXCEPTION",
                 Error = ex.ErrorList.ToArray()
             };
             return JsonSerializer.Serialize(rslt);

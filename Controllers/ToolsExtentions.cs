@@ -19,13 +19,9 @@ namespace MatchEngineApi.Controllers.Tools
             try
             {
                 byte[] imageBytes = Convert.FromBase64String(base64String);
-                using (var stream = new MemoryStream(imageBytes))
-                {
-                    using (var bitmap = SKBitmap.Decode(stream))
-                    {
-                        return bitmap != null;
-                    }
-                }
+                using var stream = new MemoryStream(imageBytes);
+                using var bitmap = SKBitmap.Decode(stream);
+                return bitmap != null;
             }
             catch
             {

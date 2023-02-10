@@ -12,18 +12,25 @@ namespace MatchEngineApi.Controllers
     {
         private readonly IDistributeCache _cache;
         private readonly IInboundDbService _db;
-        public CacheLoader(IDistributeCache cache, IInboundDbService db)
+        private readonly ILogService _log;
+        public CacheLoader(IDistributeCache cache, IInboundDbService db, ILogService log)
         {
-            _cache = cache; _db = db;
+            _cache = cache; _db = db; _log=log;
         }
 
         public void Run()
         {
-            foreach (var record in _db.VECTORS)
-            {
-                _cache.Set(ToolsExtentions.BuildCacheKey(record.MemberKey, record.InternalKey), record.Vector);
-            }
-            Console.WriteLine("CACHE IS LOADED");
+            _log.Info("START CACHE LOADING");
+            // foreach(var itm in _db.VECTORS){
+            //     _cache.Set(ToolsExtentions.BuildCacheKey(itm.MemberKey, itm.InternalKey), itm.Vector);
+            // }
+
+            Parallel.ForEach(
+                 _db.VECTORS,
+                 parallelOptions:new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                 itm => _cache.Set(ToolsExtentions.BuildCacheKey(itm.MemberKey, itm.InternalKey), itm.Vector)
+            );
+            _log.Info("CACHE IS LOADED");
         }
     }
 }

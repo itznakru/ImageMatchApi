@@ -4,10 +4,9 @@ using MatchEngineApi.Middleware;
 using ItZnak.Infrastruction.Services;
 using MatchEngineApi;
 using MatchEngineApi.Controllers;
-using  MatchEngineApi.Controllers.Tools;
+using MatchEngineApi.Controllers.Tools;
 
 RedisCache _cache;
-IServiceProvider _serviceProvider;
 CacheLoader _cacheLoader;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +22,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddLogService();
 builder.Services.AddConfigService();
-builder.Services.AddSingleton<IInboundDbService, InboundDbService>();
-
+builder.Services.AddScoped<IInboundDbService, InboundDbService>();
 
 var redisConfig = builder.Services
                         .GetService<IConfigService>()
@@ -48,9 +46,14 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseExceptionHandlerMdl();
 
+/* SET ENVIROMENT */
+new InfrastractionSettings(builder.Services.GetService<IConfigService>(),
+                           builder.Services.GetService<ILogService>()).ApplaySettings();
+
 /* LOAD A CACHE */
 _cacheLoader = new CacheLoader(builder.Services.GetService<IDistributeCache>(),
-                               builder.Services.GetService<IInboundDbService>());
+                               builder.Services.GetService<IInboundDbService>(),
+                               builder.Services.GetService<ILogService>());
 _cacheLoader.Run();
 
 app.Run();

@@ -4,16 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MatchEngineApi.Services
 {
-
     public class InboundDbService : DbContext, IInboundDbService
     {
         private readonly ILogService _log;
-        private readonly IConfigService _conf;
         private readonly string _dbPatch;
         public InboundDbService(ILogService log, IConfigService conf)
         {
             _log = log;
-            _conf = conf;
             _dbPatch = conf.GetString("dbPath");
         }
 
@@ -23,6 +20,7 @@ namespace MatchEngineApi.Services
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseSqlite($"Data Source={_dbPatch}");
+            _log.Info($"The DbContext has been configured. File path:{_dbPatch}");
         }
     }
 }

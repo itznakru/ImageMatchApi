@@ -12,7 +12,7 @@ namespace MatchEngineApi.Controllers
     public class AddTemplateHandlerRQ
     {
         [JsonProperty("memberkey")]
-        public string? MemberKey { get; set; }
+        public string MemberKey { get; set; }
         [JsonProperty("internalkey")]
         public string InternalKey { get; set; }
         [JsonProperty("image")]
@@ -25,34 +25,46 @@ namespace MatchEngineApi.Controllers
 
     public class AddTemplateHandler : WebApiControllerHandler<AddTemplateHandlerRQ, ApiResponse<string>>
     {
-        const string METHOD_NAME = "addtemplate";
         private readonly IInboundDbService _db;
         private readonly IDistributeCache _cache;
+        private readonly ILogService _log;
+
         public AddTemplateHandler(IMatchEngineController context, IDistributeCache cache) : base(context)
         {
             _db = context.DbContext;
             _cache = cache;
+            _log = _context.Log;
+            _semaphoregate = new SemaphoreSlim(1);
         }
 
-        private bool IsExistInDbAsync(string memberKey, string intervalKey)
+        private bool IsExistInDb(string memberKey, string intervalKey)
         {
             if (string.IsNullOrEmpty(intervalKey))
                 return true;
 
             return _db.VECTORS.Any(_ => _.MemberKey == memberKey && _.InternalKey == intervalKey);
         }
-        private void AddToCache(AddTemplateHandlerRQ p){
-              _cache.Set(ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey), Convert.FromBase64String(p.Template));
+        private void TryAddToCache(AddTemplateHandlerRQ p)
+        {
+            var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
+            if (_cache.Get(key) == null)
+            {
+                _cache.Set(key, Convert.FromBase64String(p.Template));
+                _log.Info($"add vector {key} to cache ");
+            }
         }
 
-        public override async Task<ApiResponse<string>> HandleAsync(AddTemplateHandlerRQ p)
-        {
-            if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(METHOD_NAME, "Parametr image wrong. Is not an image.");
-            if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(METHOD_NAME, "Parametr template wrong. Is not an vector.");
-            if (IsExistInDbAsync(p.MemberKey, p.InternalKey)) throw new MatchEngineApiException(METHOD_NAME, "Record with key " + p.InternalKey + " exists in DB");
-            AddToCache(p);
+        public override ApiResponse<string> Handle(AddTemplateHandlerRQ p){
+            var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
+            if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr image wrong. Is not an image.");
+            if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr template wrong. Is not an vector.");
+            if (IsExistInDb(p.MemberKey, p.InternalKey)) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Record with key " + p.InternalKey + " exists in DB");
 
-            await _db.VECTORS.AddAsync(new DTO.VectorDto()
+             _semaphoregate.Wait();
+            /* ADD RECORD TO CACHE */
+            TryAddToCache(p);
+
+             _db.VECTORS.Add(new DTO.VectorDto()
             {
                 MemberKey = p.MemberKey ?? "",
                 Image = p.Image,
@@ -61,8 +73,11 @@ namespace MatchEngineApi.Controllers
                 Vector = Convert.FromBase64String(p.Template)
             });
 
-            await _db.CTX.SaveChangesAsync();
-            return new ApiResponse<string>() { Method = METHOD_NAME, Status = nameof(ApiResponseStatus.OK) };
+             _db.CTX.SaveChanges();
+            _semaphoregate.Release();
+
+            _log.Info($"add vector {key}, MemberKey:{p.MemberKey}, InternalKey:{p.InternalKey} ");
+            return new ApiResponse<string>(ApiMethod.ADDTEMPLATE) { Status = nameof(ApiResponseStatus.OK) };
         }
     }
 }

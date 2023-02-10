@@ -3,6 +3,7 @@
 CREATE TABLE VECTORS (
     Id      TEXT    PRIMARY KEY,
     MemberKey TEXT,
+    InternalKey TEXT,
     MemberId TEXT,
     Vector BLOB,
     Image TEXT,

@@ -19,7 +19,8 @@ namespace MatchEngineApi.Services
         public DbContext CTX {get{return this;}}
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseSqlite($"Data Source={_dbPatch}");
+            var homeDir=Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            options.UseSqlite($"Data Source={homeDir+_dbPatch}");
             _log.Info($"The DbContext has been configured. File path:{_dbPatch}");
         }
     }

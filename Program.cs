@@ -11,7 +11,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        const int HTTP_PORT = 8080;
+        const int HTTP_PORT = 8888;
         RedisCache _cache;
         CacheLoader _cacheLoader;
 

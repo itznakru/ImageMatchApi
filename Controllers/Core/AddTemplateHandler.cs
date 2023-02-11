@@ -56,8 +56,8 @@ namespace MatchEngineApi.Controllers
 
         public override ApiResponse<string> Handle(AddTemplateHandlerRQ p){
             var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
-            if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr image wrong. Is not an image.");
-            if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr template wrong. Is not an vector.");
+            if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Image' wrong. Is not an image.");
+            if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Template' wrong. Is not an vector.");
             if (IsExistInDb(p.MemberKey, p.InternalKey)) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Record with key " + p.InternalKey + " exists in DB");
 
              _semaphoregate.Wait();

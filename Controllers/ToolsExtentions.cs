@@ -10,7 +10,8 @@ namespace MatchEngineApi.Controllers.Tools
 {
     public static class ToolsExtentions
     {
-        public static T GetService<T>  (this IServiceCollection services){
+        public static T GetService<T>(this IServiceCollection services)
+        {
             var provider = services.BuildServiceProvider();
             return provider.GetService<T>();
         }
@@ -34,8 +35,10 @@ namespace MatchEngineApi.Controllers.Tools
             try
             {
                 byte[] byteArray = Convert.FromBase64String(base64String);
-                const int size = sizeof(double);
-                return byteArray.Length % size == 0;
+                return true;
+                // Console.WriteLine(byteArray.Length);
+                // const int size = sizeof(double);
+                // return byteArray.Length % size == 0;
             }
             catch
             {
@@ -45,7 +48,7 @@ namespace MatchEngineApi.Controllers.Tools
 
         public static string BuildCacheKey(string memeberKey, string internalKey)
         {
-           return memeberKey+"_"+internalKey;
+            return memeberKey + "_" + internalKey;
         }
     }
 }

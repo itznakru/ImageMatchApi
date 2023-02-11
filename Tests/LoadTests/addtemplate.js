@@ -15,12 +15,12 @@ import http from "k6/http";
 // };
 
 export const options = {
-  vus: 10,
-  duration: '30000s',
+  vus: 50,
+  duration: '30s',
 };
 
 export default function () {
-  const url = "http://localhost:5272/memberkey/core/addtemplate";
+  const url = "http://20.160.63.109:8080/memberkey/core/addtemplate";
 
   let payload = JSON.stringify({
     internalkey: "DOCID",

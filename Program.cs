@@ -6,15 +6,16 @@ using MatchEngineApi;
 using MatchEngineApi.Controllers;
 using MatchEngineApi.Controllers.Tools;
 using System.Net;
+using Infrastraction.Services.MemoryCache;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
         const int HTTP_PORT = 8888;
-        RedisCache _cache;
+        //RedisCache _cache;
+        MemoryCache<byte[]> _cache;
         CacheLoader _cacheLoader;
-
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -35,8 +36,8 @@ internal class Program
                                 .GetService<IConfigService>()
                                 .GetObject<RedisCacheConfig>(RedisCacheConfig.rootName);
 
-        _cache = new RedisCache(builder.Services, redisConfig);
-        builder.Services.AddSingleton<IDistributeCache>(_cache);
+        _cache = new MemoryCache<byte[]>();
+        builder.Services.AddSingleton<IMemoryCache<byte[]>>(_cache);
 
         /* ConfigureKestrel*/
         builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Any, HTTP_PORT));
@@ -55,13 +56,14 @@ internal class Program
         app.UseAuthorization();
         app.MapControllers();
         app.UseExceptionHandlerMdl();
+        app.UseWriteBalancerMdl();
 
         /* SET ENVIROMENT */
         new InfrastractionSettings(builder.Services.GetService<IConfigService>(),
                                    builder.Services.GetService<ILogService>()).ApplaySettings();
 
         /* LOAD A CACHE */
-        _cacheLoader = new CacheLoader(builder.Services.GetService<IDistributeCache>(),
+        _cacheLoader = new CacheLoader(builder.Services.GetService<IMemoryCache<byte[]>>(),
                                        builder.Services.GetService<IInboundDbService>(),
                                        builder.Services.GetService<ILogService>());
         _cacheLoader.Run();

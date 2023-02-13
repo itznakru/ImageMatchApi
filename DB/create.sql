@@ -4,7 +4,8 @@ CREATE TABLE VECTORS (
     InternalKey TEXT,
     Vector BLOB,
     Image TEXT,
-    ImageType NUMBER);
+    ImageType NUMBER,
+    CreateDateTime NUMBER);
  
 CREATE INDEX vec_mkey_index ON VECTORS (MemberKey);   
 CREATE INDEX vec_mid_index ON VECTORS (InternalKey);   

@@ -11,5 +11,9 @@ namespace MatchEngineApi.Middleware
             {
                 return builder.UseMiddleware<ExceptionHandlerMdl>();
             }
+            public static IApplicationBuilder UseWriteBalancerMdl(this IApplicationBuilder builder)
+            {
+                return builder.UseMiddleware<WriteBalancerMdl>();
+            }
     }
 }

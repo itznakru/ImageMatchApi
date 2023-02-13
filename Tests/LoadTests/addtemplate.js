@@ -20,7 +20,7 @@ export const options = {
 };
 
 export default function () {
-  const url = "http://20.160.63.109:8080/memberkey/core/addtemplate";
+  const url = "http://127.0.0.1:8888/memberkey/core/addtemplate";
 
   let payload = JSON.stringify({
     internalkey: "DOCID",

@@ -21,7 +21,6 @@ namespace MatchEngineApi.Services
         {
             var homeDir=Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             options.UseSqlite($"Data Source={homeDir+_dbPatch}");
-            _log.Info($"The DbContext has been configured. File path:{_dbPatch}");
         }
     }
 }

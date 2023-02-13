@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Infrastraction.Services.MemoryCache;
 using ItZnak.Infrastruction.Services;
 using ItZnak.Infrastruction.Web.Controllers;
 using MatchEngineApi.Controllers.Base;
@@ -14,10 +15,10 @@ namespace MatchEngineApi.Controllers.Core
     public class ClearHandler : WebApiControllerHandler<string, ApiResponse<Boolean>>
     {
         private readonly IInboundDbService _db;
-        private readonly IDistributeCache _cache;
+        private readonly IMemoryCache<byte[]> _cache;
         private readonly ILogService _log;
 
-        public ClearHandler(IMatchEngineController context, IDistributeCache cache) : base(context)
+        public ClearHandler(IMatchEngineController context, IMemoryCache<byte[]> cache) : base(context)
         {
             _db = context.DbContext;
             _cache = cache;
@@ -32,8 +33,8 @@ namespace MatchEngineApi.Controllers.Core
             vectors.ForEach(v =>
             {
                 var key = ToolsExtentions.BuildCacheKey(v.MemberKey, v.InternalKey);
-                if (_cache.Get(key) != null)
-                    _cache.Remove(key);
+                if (!_cache.IsExists(key) )
+                                _cache.Remove(key);
             });
               _log.Info($"removed from cache  {vectors.Count} by memberKey:{vectors[0].MemberKey}");
         }

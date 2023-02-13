@@ -1,4 +1,5 @@
 using System.Security.Principal;
+using Infrastraction.Services.MemoryCache;
 using ItZnak.Infrastruction.Services;
 using MatchEngineApi.Controllers.Base;
 using MatchEngineApi.Services;
@@ -10,9 +11,9 @@ namespace MatchEngineApi.Controllers.Core
     [ApiController]
     public class CoreController : MatchEngineApiController
     {
-        private readonly IDistributeCache _cache;
+        private readonly IMemoryCache<byte[]> _cache;
 
-        public CoreController(IConfigService conf, ILogService logger, IInboundDbService dbContext, IDistributeCache cache) : base(conf, logger, dbContext)
+        public CoreController(IConfigService conf, ILogService logger, IInboundDbService dbContext, IMemoryCache<byte[]> cache) : base(conf, logger, dbContext)
         {
             _cache = cache;
         }

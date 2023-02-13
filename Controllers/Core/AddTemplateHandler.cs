@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using MatchEngineApi.Controllers.Tools;
 using MatchEngineApi.Controllers.Exceptions;
 using ItZnak.Infrastruction.Services;
+using Infrastraction.Services.MemoryCache;
 
 namespace MatchEngineApi.Controllers
 {
@@ -26,10 +27,10 @@ namespace MatchEngineApi.Controllers
     public class AddTemplateHandler : WebApiControllerHandler<AddTemplateHandlerRQ, ApiResponse<string>>
     {
         private readonly IInboundDbService _db;
-        private readonly IDistributeCache _cache;
+        private readonly IMemoryCache<byte[]>  _cache;
         private readonly ILogService _log;
 
-        public AddTemplateHandler(IMatchEngineController context, IDistributeCache cache) : base(context)
+        public AddTemplateHandler(IMatchEngineController context, IMemoryCache<byte[]>  cache) : base(context)
         {
             _db = context.DbContext;
             _cache = cache;
@@ -47,7 +48,7 @@ namespace MatchEngineApi.Controllers
         private void TryAddToCache(AddTemplateHandlerRQ p)
         {
             var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
-            if (_cache.Get(key) == null)
+            if (!_cache.IsExists(key) )
             {
                 _cache.Set(key, Convert.FromBase64String(p.Template));
                 _log.Info($"add vector {key} to cache ");

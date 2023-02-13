@@ -29,12 +29,15 @@ namespace MatchEngineApi.Controllers
         private readonly IInboundDbService _db;
         private readonly IMemoryCache<byte[]>  _cache;
         private readonly ILogService _log;
+        
+        private readonly int _trashHold;
 
-        public AddTemplateHandler(IMatchEngineController context, IMemoryCache<byte[]>  cache) : base(context)
+        public AddTemplateHandler(IMatchEngineController context, IMemoryCache<byte[]>  cache, IConfigService config) : base(context)
         {
             _db = context.DbContext;
             _cache = cache;
             _log = _context.Log;
+            _trashHold=config.GetInt("memoryRecordsTrashHold");
             _semaphoregate = new SemaphoreSlim(1);
         }
 
@@ -60,7 +63,7 @@ namespace MatchEngineApi.Controllers
             if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Image' wrong. Is not an image.");
             if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Template' wrong. Is not an vector.");
             if (IsExistInDb(p.MemberKey, p.InternalKey)) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Record with key " + p.InternalKey + " exists in DB");
-
+            if(_cache.Count>_trashHold) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "The database size limit has been reached");
              _semaphoregate.Wait();
             /* ADD RECORD TO CACHE */
             TryAddToCache(p);

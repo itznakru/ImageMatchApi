@@ -39,7 +39,7 @@ namespace MatchEngineApi.Controllers.Core
         [Route("status")]
         public ActionResult GetStatus(string memberKey)
         {
-            StatusHandler h = new(this);
+            StatusHandler h = new(this, _cache);
             return Ok(h.Handle(memberKey));
         }
         [HttpGet]

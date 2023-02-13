@@ -30,7 +30,7 @@ namespace MatchEngineApi.Controllers.Core
         [Route("addtemplate")]
         public IActionResult AddTemplate(string memberKey, [FromBody] AddTemplateHandlerRQ payload)
         {
-            AddTemplateHandler h = new(this, _cache);
+            AddTemplateHandler h = new(this, _cache, _conf);
             payload.MemberKey = memberKey;
             return Ok(h.Handle(payload));
         }

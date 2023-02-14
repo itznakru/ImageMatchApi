@@ -29,7 +29,6 @@ namespace MatchEngineApi.Controllers
         private readonly IInboundDbService _db;
         private readonly IMemoryCache<byte[]>  _cache;
         private readonly ILogService _log;
-        
         private readonly int _trashHold;
 
         public AddTemplateHandler(IMatchEngineController context, IMemoryCache<byte[]>  cache, IConfigService config) : base(context)

@@ -6,11 +6,12 @@ using Infrastraction.Services.MemoryCache;
 using ItZnak.Infrastruction.Services;
 using ItZnak.Infrastruction.Web.Controllers;
 using MatchEngineApi.Controllers.Base;
+using MatchEngineApi.Controllers.Exceptions;
 using MatchEngineApi.Controllers.Tools;
 using MatchEngineApi.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace MatchEngineApi.Controllers.Core
+namespace MatchEngineApi.Controllers.Managment
 {
     public class ClearHandler : WebApiControllerHandler<string, ApiResponse<Boolean>>
     {
@@ -41,6 +42,9 @@ namespace MatchEngineApi.Controllers.Core
 
         public async override Task<ApiResponse<bool>> HandleAsync(string memberKey)
         {
+            if(string.IsNullOrEmpty(memberKey))
+                throw new MatchEngineApiException(ApiMethod.CLEAR, "Parametr 'memberKey' is wrong.");
+
             /* get record keys */
             _log.Info($"start clear process for {memberKey}");
              List<DTO.VectorDto> vectorsForDestroy = await _db.VECTORS.Where(_ => _.MemberKey == memberKey)

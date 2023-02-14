@@ -26,6 +26,8 @@ namespace MatchEngineApi.Controllers.Core
             return Ok(await h.HandleAsync(payload));
         }
 
+        
+
         [HttpPost]
         [Route("addtemplate")]
         public IActionResult AddTemplate(string memberKey, [FromBody] AddTemplateHandlerRQ payload)
@@ -33,21 +35,6 @@ namespace MatchEngineApi.Controllers.Core
             AddTemplateHandler h = new(this, _cache, _conf);
             payload.MemberKey = memberKey;
             return Ok(h.Handle(payload));
-        }
-
-        [HttpGet]
-        [Route("status")]
-        public ActionResult GetStatus(string memberKey)
-        {
-            StatusHandler h = new(this, _cache);
-            return Ok(h.Handle(memberKey));
-        }
-        [HttpGet]
-        [Route("clear")]
-        public async Task<ActionResult> Clear(string memberKey)
-        {
-            ClearHandler h = new(this, _cache);
-            return Ok(await h.HandleAsync(memberKey));
         }
     }
 }

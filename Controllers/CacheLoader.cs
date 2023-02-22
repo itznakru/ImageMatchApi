@@ -11,10 +11,10 @@ namespace MatchEngineApi.Controllers
 {
     public class CacheLoader
     {
-        private readonly IMemoryCache<byte[]> _cache;
+        private readonly IMemoryCache<double[]> _cache;
         private readonly IInboundDbService _db;
         private readonly ILogService _log;
-        public CacheLoader(IMemoryCache<byte[]> cache, IInboundDbService db, ILogService log)
+        public CacheLoader(IMemoryCache<double[]> cache, IInboundDbService db, ILogService log)
         {
             _cache = cache; _db = db; _log=log;
         }
@@ -26,7 +26,7 @@ namespace MatchEngineApi.Controllers
             Parallel.ForEach(
                  _db.VECTORS,
                  parallelOptions:new ParallelOptions { MaxDegreeOfParallelism = 4 },
-                 itm => _cache.Set(ToolsExtentions.BuildCacheKey(itm.MemberKey, itm.InternalKey), itm.Vector)
+                 itm => _cache.Set(itm.MemberKey, itm.InternalKey, itm.Vector.JsonToDouble())
             );
             _log.Info("CACHE IS LOADED");
         }

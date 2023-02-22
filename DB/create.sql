@@ -2,7 +2,7 @@ CREATE TABLE VECTORS (
     Id      TEXT    PRIMARY KEY,
     MemberKey TEXT,
     InternalKey TEXT,
-    Vector BLOB,
+    Vector TEXT,
     Image TEXT,
     ImageType NUMBER,
     CreateDateTime NUMBER);

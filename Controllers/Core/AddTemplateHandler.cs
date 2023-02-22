@@ -19,7 +19,7 @@ namespace MatchEngineApi.Controllers
         [JsonProperty("image")]
         public string Image { get; set; } = null!;
         [JsonProperty("template")]
-        public string Template { get; set; } = null!;
+        public string Template { get; set; } = null!; // template in JSON
         [JsonProperty("imagetype")]
         public ImageType ImageType { get; set; }
     }
@@ -27,16 +27,16 @@ namespace MatchEngineApi.Controllers
     public class AddTemplateHandler : WebApiControllerHandler<AddTemplateHandlerRQ, ApiResponse<string>>
     {
         private readonly IInboundDbService _db;
-        private readonly IMemoryCache<byte[]>  _cache;
+        private readonly IMemoryCache<double[]> _cache;
         private readonly ILogService _log;
         private readonly int _trashHold;
 
-        public AddTemplateHandler(IMatchEngineController context, IMemoryCache<byte[]>  cache, IConfigService config) : base(context)
+        public AddTemplateHandler(IMatchEngineController context, IMemoryCache<double[]> cache, IConfigService config) : base(context)
         {
             _db = context.DbContext;
             _cache = cache;
             _log = _context.Log;
-            _trashHold=config.GetInt("memoryRecordsTrashHold");
+            _trashHold = config.GetInt("memoryRecordsTrashHold");
             _semaphoregate = new SemaphoreSlim(1);
         }
 
@@ -49,37 +49,35 @@ namespace MatchEngineApi.Controllers
         }
         private void TryAddToCache(AddTemplateHandlerRQ p)
         {
-            var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
-            if (!_cache.IsExists(key) )
+            if (!_cache.IsExists(p.MemberKey, p.InternalKey))
             {
-                _cache.Set(key, Convert.FromBase64String(p.Template));
-                _log.Info($"add vector {key} to cache ");
+                _cache.Set(p.MemberKey, p.InternalKey, p.Template.JsonToDouble());
+                _log.Info($"add vector {p.InternalKey} to cache ");
             }
         }
 
-        public override ApiResponse<string> Handle(AddTemplateHandlerRQ p){
-            var key = ToolsExtentions.BuildCacheKey(p.MemberKey, p.InternalKey);
+        public override ApiResponse<string> Handle(AddTemplateHandlerRQ p)
+        {
             if (!p.Image.IsBase64StringAnImage()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Image' wrong. Is not an image.");
-            if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Template' wrong. Is not an vector.");
+            //  if (!p.Template.IsBase64StringAnDoubleArray()) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Parametr 'Template' wrong. Is not an vector.");
             if (IsExistInDb(p.MemberKey, p.InternalKey)) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "Record with key " + p.InternalKey + " exists in DB");
-            if(_cache.Count>_trashHold) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "The database size limit has been reached");
-             _semaphoregate.Wait();
+            if (_cache.Count > _trashHold) throw new MatchEngineApiException(ApiMethod.ADDTEMPLATE, "The database size limit has been reached");
+
             /* ADD RECORD TO CACHE */
             TryAddToCache(p);
 
-             _db.VECTORS.Add(new DTO.VectorDto()
+            _db.VECTORS.Add(new DTO.VectorDto()
             {
                 MemberKey = p.MemberKey ?? "",
                 Image = p.Image,
                 InternalKey = p.InternalKey,
                 ImageType = p.ImageType,
-                Vector = Convert.FromBase64String(p.Template)
+                Vector = p.Template
             });
 
-             _db.CTX.SaveChanges();
-            _semaphoregate.Release();
+            _db.CTX.SaveChanges();
 
-            _log.Info($"add vector {key}, MemberKey:{p.MemberKey}, InternalKey:{p.InternalKey} ");
+            _log.Info($"add vector  MemberKey:{p.MemberKey}, InternalKey:{p.InternalKey} ");
             return new ApiResponse<string>(ApiMethod.ADDTEMPLATE) { Status = nameof(ApiResponseStatus.OK) };
         }
     }

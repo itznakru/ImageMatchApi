@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Drawing;
 using SkiaSharp;
 using MatchEngineApi.DTO;
+using ItZnak.Infrastruction.Services;
+using Newtonsoft.Json;
 
 namespace MatchEngineApi.Controllers.Tools
 {
@@ -46,9 +48,34 @@ namespace MatchEngineApi.Controllers.Tools
             }
         }
 
-        public static string BuildCacheKey(string memeberKey, string internalKey)
+      
+
+        public static string ToBase64String(this double[] vector)
         {
-            return memeberKey + "_" + internalKey;
+            double[] values = vector;
+            byte[] bytes = new byte[values.Length * sizeof(double)];
+            Buffer.BlockCopy(values, 0, bytes, 0, bytes.Length);
+            return Convert.ToBase64String(bytes);
         }
+
+        public static string ToJson(this double[] vector)
+        {
+            return JsonConvert.SerializeObject(vector);
+        }
+
+        public static double[] JsonToDouble(this string vector)
+        {
+            return JsonConvert.DeserializeObject<double[]>(vector);
+        }
+
+        
+
+        public static bool IsRootNode(this IConfigService config)
+        {
+            var rootNode = config.GetString("rootNode");
+            return rootNode == System.Net.Dns.GetHostName();
+
+        }
+     //   public static double[] ToDouble()
     }
 }

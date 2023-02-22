@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 namespace MatchEngineApi.Controllers.Base
 {
     public enum ApiResponseStatus { OK, ERROR }
-    public enum ApiMethod { UNKNOWN, ADD, ADDTEMPLATE, CLEAR }
+    public enum ApiMethod { UNKNOWN, ADD, ADDTEMPLATE, CREATEVECTOR, CLEAR, SEARCH }
     public class ApiResponse<T>
     {
         public ApiResponse()
@@ -23,6 +23,7 @@ namespace MatchEngineApi.Controllers.Base
 
         [JsonProperty("status")]
         public string Status { get; set; }
+        
         [JsonProperty("error")]
         public string[] Error { get; set; } = Array.Empty<string>();
         [JsonProperty("method")]

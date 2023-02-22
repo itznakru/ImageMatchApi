@@ -10,14 +10,14 @@ using MatchEngineApi.Services;
 
 namespace MatchEngineApi.Controllers.Managment
 {
-    public class StatusRS
+    public class StatusNodeRS
     {
         public string NodeIP {get;set;}
         public string  MemberKey { get; set; }
         public int  Count {get;set;}
      }
 
-    public class StatusHandler : WebApiControllerHandler<string, StatusRS[]>
+    public class StatusHandler : WebApiControllerHandler<string, StatusNodeRS[]>
     {
         private readonly IInboundDbService _db;
         public StatusHandler(IMatchEngineController context) : base(context)
@@ -25,11 +25,10 @@ namespace MatchEngineApi.Controllers.Managment
             _db = context.DbContext;
         }
 
-        public override StatusRS[] Handle(string currentIp)
+        public override StatusNodeRS[] Handle(string currentIp)
         {
-           
             return _db.VECTORS.GroupBy(_=>_.MemberKey)
-                              .Select(p=>new StatusRS(){NodeIP=currentIp, Count=p.Count(), MemberKey=p.Key})
+                              .Select(p=>new StatusNodeRS(){NodeIP=currentIp, Count=p.Count(), MemberKey=p.Key})
                               .ToArray();
         }
     }

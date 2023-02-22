@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ItZnak.Infrastruction.Services;
 
 namespace MatchEngineApi.Middleware
 {
@@ -11,9 +12,11 @@ namespace MatchEngineApi.Middleware
             {
                 return builder.UseMiddleware<ExceptionHandlerMdl>();
             }
-            public static IApplicationBuilder UseWriteBalancerMdl(this IApplicationBuilder builder)
+            public static IApplicationBuilder UseWriteBalancerMdl(this IApplicationBuilder builder
+            , IConfigService configService,
+            ILogService logService )
             {
-                return builder.UseMiddleware<WriteBalancerMdl>();
+                return builder.UseMiddleware<BalancerMdl>(configService,logService);
             }
     }
 }

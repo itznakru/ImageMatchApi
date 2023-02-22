@@ -33,9 +33,8 @@ namespace MatchEngineApi.Controllers.Managment
 
             vectors.ForEach(v =>
             {
-                var key = ToolsExtentions.BuildCacheKey(v.MemberKey, v.InternalKey);
-                if (!_cache.IsExists(key) )
-                                _cache.Remove(key);
+                if (!_cache.IsExists(v.MemberKey, v.InternalKey) )
+                                _cache.Remove(v.MemberKey,v.InternalKey);
             });
               _log.Info($"removed from cache  {vectors.Count} by memberKey:{vectors[0].MemberKey}");
         }
